@@ -1,0 +1,16 @@
+# Ignore project-specific directory
+.gradle
+.classpath
+.project
+.settings
+
+# IDE
+.idea
+.classpath
+.vscode
+*.swp
+*~
+
+# Ignore Gradle build output directory
+build
+bin
