@@ -1,7 +1,6 @@
 package framework_kata;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /* Part 1
  * 
@@ -42,6 +41,7 @@ import static org.junit.Assert.*;
 
 public class RestCommandTest {
     @Test public void testSomeLibraryMethod() {
-        fail("not implemented");
+        RestCommand command = new RestCommand();
+        command.run();
     }
 }

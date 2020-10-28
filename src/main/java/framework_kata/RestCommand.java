@@ -5,4 +5,7 @@ package framework_kata;
 
 public class RestCommand {
 	/* implement the run() method here */
+	public void run() {
+		
+	}
 }
