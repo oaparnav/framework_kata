@@ -1,6 +1,17 @@
 package framework_kata;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.*;
 
 /* Part 1
  * 
@@ -13,14 +24,14 @@ import org.junit.Test;
  */
 
 /* Part 2
- * 
- * Add support for authentication. Needs to support FIG
- * authentication as well as Azure. Should set the proper
- * auth headers before making the call.
- * 
- * Design should be Open/Closed to be able to support other
- * authentication mechanisms in the future
- */
+* 
+* Add support for authentication. Needs to support FIG
+* authentication as well as Azure. Should set the proper
+* auth headers before making the call.
+* 
+* Design should be Open/Closed to be able to support other
+* authentication mechanisms in the future
+*/
 
 /* Part 3
  * 
@@ -40,8 +51,41 @@ import org.junit.Test;
  */
 
 public class RestCommandTest {
-    @Test public void testSomeLibraryMethod() {
-        RestCommand command = new RestCommand();
-        command.run();
+    private RestTemplate restTemplate;
+    private AppController controller;
+
+    @Before
+    public void setup() {
+        ResponseEntity<String> response = new ResponseEntity<String>("Hello, world", HttpStatus.OK);
+        restTemplate = Mockito.mock(RestTemplate.class);
+        Mockito.when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class),  eq(String.class)))
+            .thenReturn(response);
+        controller = new AppController(restTemplate);
+    }
+
+    @Test
+    public void testResponse() throws Exception {
+        String response = controller.endpoint1();
+        assertEquals("Hello, world", response);
+    }
+
+    @Test
+    public void shouldIncludeTraceId() throws Exception {
+        controller.endpoint1();
+        ArgumentCaptor<HttpEntity<String>> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+        Mockito.verify(restTemplate).exchange(eq("https://www.google.co.in/"), eq(HttpMethod.GET), entityCaptor.capture(), eq(String.class));
+        HttpEntity<String> entity = entityCaptor.getValue();
+        HttpHeaders headers = entity.getHeaders();
+        assertEquals("123", headers.get("trace-id").get(0));
+    }
+
+    @Test
+    public void shouldIncludeAuthHeader() throws Exception {
+        controller.endpoint1();
+        ArgumentCaptor<HttpEntity<String>> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+        Mockito.verify(restTemplate).exchange(eq("https://www.google.co.in/"), eq(HttpMethod.GET), entityCaptor.capture(), eq(String.class));
+        HttpEntity<String> entity = entityCaptor.getValue();
+        HttpHeaders headers = entity.getHeaders();
+        assertEquals("Bearer abc", headers.get("auth").get(0));
     }
 }
